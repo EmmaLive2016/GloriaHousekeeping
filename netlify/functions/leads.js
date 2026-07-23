@@ -3,6 +3,8 @@
 const U = require("./_shared/util.js");
 
 exports.handler = async (event) => {
+  U.init(event);
+  try {
   if (event.httpMethod === "POST") {
     if (!(await U.rateLimit(event, "lead", 5))) return U.json(429, { error: "Too many requests — please call us instead." });
     let b;
@@ -27,4 +29,8 @@ exports.handler = async (event) => {
   }
 
   return U.json(405, { error: "Method not allowed" });
+  } catch (err) {
+    console.error("leads handler crash", err);
+    return U.json(500, { error: "Server error in leads — check the function logs in Netlify." });
+  }
 };

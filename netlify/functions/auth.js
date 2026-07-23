@@ -3,6 +3,8 @@
 const U = require("./_shared/util.js");
 
 exports.handler = async (event) => {
+  U.init(event);
+  try {
   if (event.httpMethod !== "POST") return U.json(405, { error: "Method not allowed" });
   if (!(await U.rateLimit(event, "auth", 20))) return U.json(429, { error: "Too many attempts — try again later." });
 
@@ -36,4 +38,8 @@ exports.handler = async (event) => {
   }
 
   return U.json(400, { error: "Unknown action" });
+  } catch (err) {
+    console.error("auth handler crash", err);
+    return U.json(500, { error: "Server error in auth — check the function logs in Netlify." });
+  }
 };

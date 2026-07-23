@@ -28,6 +28,8 @@ RULES:
 }
 
 exports.handler = async (event) => {
+  U.init(event);
+  try {
   if (event.httpMethod !== "POST") return U.json(405, { error: "Method not allowed" });
 
   const c = await U.getContent();
@@ -75,5 +77,9 @@ exports.handler = async (event) => {
   } catch (err) {
     console.error("chat function error", err);
     return fallback(`Sorry — something went wrong. Please call us at ${c.phone}.`);
+  }
+  } catch (err) {
+    console.error("chat handler crash", err);
+    return U.json(500, { error: "Server error in chat — check the function logs in Netlify." });
   }
 };

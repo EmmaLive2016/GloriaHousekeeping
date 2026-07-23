@@ -3,6 +3,8 @@
 const U = require("./_shared/util.js");
 
 exports.handler = async (event) => {
+  U.init(event);
+  try {
   if (event.httpMethod === "GET") {
     const c = await U.getContent();
     return U.json(200, c);
@@ -15,4 +17,8 @@ exports.handler = async (event) => {
     return U.json(200, saved);
   }
   return U.json(405, { error: "Method not allowed" });
+  } catch (err) {
+    console.error("content handler crash", err);
+    return U.json(500, { error: "Server error in content — check the function logs in Netlify." });
+  }
 };

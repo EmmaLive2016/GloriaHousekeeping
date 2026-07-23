@@ -2,9 +2,15 @@
 // Pattern ported from the Lexi Lou admin: Netlify Blobs datastore,
 // scrypt password hashing, HMAC-signed session tokens, IP rate limits.
 const crypto = require("node:crypto");
-const { getStore } = require("@netlify/blobs");
+const { getStore, connectLambda } = require("@netlify/blobs");
 
 const store = () => getStore("gloria-cms");
+
+// REQUIRED for classic Lambda-style handlers: wires the Blobs environment
+// from the invocation event. Call first in every handler.
+function init(event) {
+  try { if (event) connectLambda(event); } catch (e) { console.error("blobs init", e && e.message); }
+}
 
 // ---------- content ----------
 const DEFAULT_CONTENT = {
@@ -123,6 +129,7 @@ const json = (statusCode, obj) => ({
 });
 
 module.exports = {
+  init,
   DEFAULT_CONTENT, getContent, putContent,
   getAuth, seedAuth, verifyPassword,
   signSession, verifySession, bearer,
