@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Console — Gloria's House Keeping Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  body { background: var(--paper); }
+  .con-wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 90px; }
+  .con-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 28px; margin-top: 20px; box-shadow: var(--shadow-sm); }
+  .con-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .con-title h1 { font-size: 1.7rem; }
+  .con-tabs { display: flex; gap: 10px; margin-top: 22px; }
+  .con-tab { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 9px 20px; font-weight: 600; cursor: pointer; }
+  .con-tab.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .con-field { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .con-field label { font-size: .88rem; font-weight: 600; color: var(--ink); }
+  .con-field .sub { font-size: .8rem; color: var(--slate); font-weight: 400; }
+  .con-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .con-actions { display: flex; align-items: center; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+  .status { font-size: .9rem; color: var(--slate); }
+  .status.ok { color: var(--teal-deep); font-weight: 600; }
+  .status.err { color: #B4232A; font-weight: 600; }
+  .lead { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; background: #fff; }
+  .lead b { color: var(--ink); }
+  .lead .when { font-size: .8rem; color: var(--slate); }
+  .toggle { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-weight: 600; color: var(--ink); }
+  .toggle input { width: 18px; height: 18px; accent-color: var(--teal); }
+  .hidden { display: none !important; }
+  @media (max-width: 640px) { .con-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="con-wrap">
+  <div class="con-title">
+    <h1>Gloria's Console</h1>
+    <button class="btn btn-outline hidden" id="logout">Log out</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="con-card" id="view-login">
+    <h3>Sign in</h3>
+    <div class="con-field">
+      <label for="pw">Console password</label>
+      <input type="password" id="pw" autocomplete="current-password">
+    </div>
+    <div class="con-actions">
+      <button class="btn btn-primary" id="btn-login">Sign in</button>
+      <span class="status" id="login-status"></span>
+    </div>
+  </div>
+
+  <!-- FORCED PASSWORD CHANGE -->
+  <div class="con-card hidden" id="view-change">
+    <h3>Set a new password</h3>
+    <p class="status">First sign-in (or a reset) requires choosing your own password — at least 10 characters. Store it in 1Password.</p>
+    <div class="con-field">
+      <label for="npw">New password</label>
+      <input type="password" id="npw" autocomplete="new-password">
+    </div>
+    <div class="con-field">
+      <label for="npw2">Repeat new password</label>
+      <input type="password" id="npw2" autocomplete="new-password">
+    </div>
+    <div class="con-actions">
+      <button class="btn btn-primary" id="btn-change">Save password</button>
+      <span class="status" id="change-status"></span>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="view-dash" class="hidden">
+    <div class="con-tabs">
+      <button class="con-tab active" data-tab="content">Site content</button>
+      <button class="con-tab" data-tab="leads">Callback leads</button>
+    </div>
+
+    <div class="con-card" id="tab-content">
+      <h3>Site content</h3>
+      <p class="status">Changes go live on the website within seconds of saving — no redeploy needed. The AI assistant uses these facts too.</p>
+
+      <div class="toggle">
+        <input type="checkbox" id="ann-on"> <label for="ann-on">Show announcement bar</label>
+      </div>
+      <div class="con-field">
+        <label for="ann-text">Announcement text <span class="sub">(e.g., holiday hours, booking notices)</span></label>
+        <input type="text" id="ann-text" maxlength="160">
+      </div>
+
+      <div class="con-row">
+        <div class="con-field">
+          <label for="c-phone">Business phone</label>
+          <input type="text" id="c-phone" maxlength="20">
+        </div>
+        <div class="con-field">
+          <label for="c-areas">Service areas <span class="sub">(one per line)</span></label>
+          <textarea id="c-areas" rows="5"></textarea>
+        </div>
+      </div>
+
+      <div class="con-field">
+        <label for="c-h1">Homepage headline</label>
+        <input type="text" id="c-h1" maxlength="120">
+      </div>
+      <div class="con-field">
+        <label for="c-lede">Homepage intro paragraph</label>
+        <textarea id="c-lede" rows="3" maxlength="400"></textarea>
+      </div>
+
+      <div class="con-row">
+        <div class="con-field">
+          <label>Trust badges <span class="sub">(3 short phrases under the headline)</span></label>
+          <input type="text" id="b0" maxlength="40">
+          <input type="text" id="b1" maxlength="40">
+          <input type="text" id="b2" maxlength="40">
+        </div>
+        <div class="con-field">
+          <label>Dark strip items <span class="sub">(4 short phrases)</span></label>
+          <input type="text" id="s0" maxlength="40">
+          <input type="text" id="s1" maxlength="40">
+          <input type="text" id="s2" maxlength="40">
+          <input type="text" id="s3" maxlength="40">
+        </div>
+      </div>
+
+      <div class="con-field">
+        <label for="c-facts">Extra facts for the AI assistant <span class="sub">(optional — plain sentences the assistant may state, e.g. hours or policies)</span></label>
+        <textarea id="c-facts" rows="3" maxlength="1200"></textarea>
+      </div>
+
+      <div class="con-actions">
+        <button class="btn btn-primary" id="btn-save">Save &amp; publish</button>
+        <span class="status" id="save-status"></span>
+      </div>
+    </div>
+
+    <div class="con-card hidden" id="tab-leads">
+      <h3>Callback leads</h3>
+      <p class="status">Requests from the website chat. Newest first. Call them back promptly — speed wins these.</p>
+      <div id="leads-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var token = "";
+  var $ = function (id) { return document.getElementById(id); };
+  var show = function (el, on) { el.classList.toggle("hidden", !on); };
+
+  function api(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+    if (token) opts.headers.Authorization = "Bearer " + token;
+    return fetch("/.netlify/functions/" + path, opts).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    });
+  }
+
+  // ---------- login ----------
+  $("btn-login").addEventListener("click", function () {
+    var st = $("login-status"); st.className = "status"; st.textContent = "Signing in\u2026";
+    api("auth", { method: "POST", body: JSON.stringify({ action: "login", password: $("pw").value }) })
+      .then(function (r) {
+        if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Sign-in failed."; return; }
+        token = r.j.token;
+        show($("view-login"), false);
+        show($("logout"), true);
+        if (r.j.mustChange) { show($("view-change"), true); }
+        else { enterDash(); }
+      })
+      .catch(function () { st.className = "status err"; st.textContent = "Network error."; });
+  });
+  $("pw").addEventListener("keydown", function (e) { if (e.key === "Enter") $("btn-login").click(); });
+
+  // ---------- forced change ----------
+  $("btn-change").addEventListener("click", function () {
+    var st = $("change-status"); st.className = "status";
+    if ($("npw").value !== $("npw2").value) { st.className = "status err"; st.textContent = "Passwords don't match."; return; }
+    st.textContent = "Saving\u2026";
+    api("auth", { method: "POST", body: JSON.stringify({ action: "change", newPassword: $("npw").value }) })
+      .then(function (r) {
+        if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Failed."; return; }
+        show($("view-change"), false);
+        enterDash();
+      });
+  });
+
+  // ---------- dashboard ----------
+  function enterDash() {
+    show($("view-dash"), true);
+    loadContent();
+    loadLeads();
+  }
+
+  document.querySelectorAll(".con-tab").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".con-tab").forEach(function (x) { x.classList.remove("active"); });
+      b.classList.add("active");
+      show($("tab-content"), b.dataset.tab === "content");
+      show($("tab-leads"), b.dataset.tab === "leads");
+      if (b.dataset.tab === "leads") loadLeads();
+    });
+  });
+
+  function loadContent() {
+    api("content", { method: "GET" }).then(function (r) {
+      if (!r.ok) return;
+      var c = r.j;
+      $("ann-on").checked = !!(c.announcement && c.announcement.enabled);
+      $("ann-text").value = (c.announcement && c.announcement.text) || "";
+      $("c-phone").value = c.phone || "";
+      $("c-areas").value = (c.areas || []).join("\n");
+      $("c-h1").value = c.heroH1 || "";
+      $("c-lede").value = c.heroLede || "";
+      ["b0","b1","b2"].forEach(function (id, i) { $(id).value = (c.badges || [])[i] || ""; });
+      ["s0","s1","s2","s3"].forEach(function (id, i) { $(id).value = (c.strip || [])[i] || ""; });
+      $("c-facts").value = c.chatExtraFacts || "";
+    });
+  }
+
+  $("btn-save").addEventListener("click", function () {
+    var st = $("save-status"); st.className = "status"; st.textContent = "Publishing\u2026";
+    var body = {
+      announcement: { enabled: $("ann-on").checked, text: $("ann-text").value },
+      phone: $("c-phone").value,
+      areas: $("c-areas").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean),
+      heroH1: $("c-h1").value,
+      heroLede: $("c-lede").value,
+      badges: [$("b0").value, $("b1").value, $("b2").value],
+      strip: [$("s0").value, $("s1").value, $("s2").value, $("s3").value],
+      chatExtraFacts: $("c-facts").value,
+    };
+    api("content", { method: "PUT", body: JSON.stringify(body) })
+      .then(function (r) {
+        if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Save failed."; return; }
+        st.className = "status ok"; st.textContent = "Published \u2014 live now.";
+      })
+      .catch(function () { st.className = "status err"; st.textContent = "Network error."; });
+  });
+
+  function loadLeads() {
+    api("leads", { method: "GET" }).then(function (r) {
+      if (!r.ok) return;
+      var box = $("leads-list");
+      var leads = r.j.leads || [];
+      box.innerHTML = leads.length ? "" : '<p class="status">No callback requests yet.</p>';
+      leads.forEach(function (l) {
+        var d = document.createElement("div");
+        d.className = "lead";
+        var when = new Date(l.ts).toLocaleString();
+        d.innerHTML = "<b></b> \u2014 <a></a><div class='note'></div><div class='when'></div>";
+        d.querySelector("b").textContent = l.name;
+        var a = d.querySelector("a"); a.textContent = l.phone; a.href = "tel:" + l.phone.replace(/[^\d+]/g, "");
+        d.querySelector(".note").textContent = l.note || "";
+        d.querySelector(".when").textContent = when;
+        box.appendChild(d);
+      });
+    });
+  }
+
+  $("logout").addEventListener("click", function () { location.reload(); });
+})();
+</script>
+</body>
+</html>
