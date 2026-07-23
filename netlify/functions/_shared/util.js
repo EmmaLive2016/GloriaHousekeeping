@@ -22,26 +22,28 @@ const DEFAULT_CONTENT = {
   strip: ["Insured & Bonded", "Serving Colorado since 2002", "Satisfaction guaranteed", "Talk to Gloria directly"],
   areas: ["Highlands Ranch", "Denver Metro Area", "Elizabeth", "Fort Collins", "Loveland"],
   services: [
-    { title: "Housekeeping", blurb: "Recurring and one-time home cleaning for houses, townhomes, and apartments — kitchens, baths, floors, and every detail between.",
+    { icon: "home", title: "Housekeeping", blurb: "Recurring and one-time home cleaning for houses, townhomes, and apartments — kitchens, baths, floors, and every detail between.",
       items: ["Weekly, bi-weekly & monthly cleans","Kitchens & bathrooms","Dusting, floors & surfaces","Deep cleans","Custom checklists","One-time refreshes"] },
-    { title: "Janitorial & Commercial", blurb: "Offices, storefronts, and small commercial spaces kept spotless on a schedule built around your business hours.",
+    { icon: "building", title: "Janitorial & Commercial", blurb: "Offices, storefronts, and small commercial spaces kept spotless on a schedule built around your business hours.",
       items: ["Workspaces & common areas","Restrooms & breakrooms","Floors: vacuum, sweep & mop","Trash & recycling","After-hours scheduling","Recurring service available"] },
-    { title: "Move-In / Move-Out", blurb: "Empty-home, top-to-bottom cleans that get deposits back and hand new keys to a spotless space.",
+    { icon: "box", title: "Move-In / Move-Out", blurb: "Empty-home, top-to-bottom cleans that get deposits back and hand new keys to a spotless space.",
       items: ["Inside cabinets & drawers","Appliance interiors","Baseboards & doors","Bath & kitchen detail","Window sills & tracks","Landlord & realtor ready"] },
-    { title: "Airbnb & Rental Turnovers", blurb: "Reliable short-term-rental turnovers that keep your listing five-star ready between every guest.",
+    { icon: "bed", title: "Airbnb & Rental Turnovers", blurb: "Reliable short-term-rental turnovers that keep your listing five-star ready between every guest.",
       items: ["Guest-ready turnovers","Linen & staging reset","Restock checks","Supply & damage notes","Flexible turnover windows","Multi-listing support"] },
-    { title: "Multi-Property & HOA", blurb: "Consistent cleaning across portfolios — property managers, HOAs, and owners with more than one door.",
+    { icon: "stack", title: "Multi-Property & HOA", blurb: "Consistent cleaning across portfolios — property managers, HOAs, and owners with more than one door.",
       items: ["Portfolio scheduling","Consistent crews & checklists","Common areas & clubhouses","Vacancy cleans","Single point of contact","Simple consolidated billing"] },
-    { title: "Post-Construction Cleaning", blurb: "Final and rough cleans after builds and remodels, so the finished project actually shows finished.",
+    { icon: "hardhat", title: "Post-Construction Cleaning", blurb: "Final and rough cleans after builds and remodels, so the finished project actually shows finished.",
       items: ["Construction dust removal","Debris & residue clean-up","Window, sill & track detail","Fixture & floor detail","Final cleans before walkthrough","Ready-to-occupy finish"] },
   ],
   addons: [
-    { label: "Pet sitting", desc: "Care and company for your pets while you're out." },
-    { label: "Pet walking", desc: "Walks for your pets, scheduled around your needs." },
-    { label: "Home check-ins", desc: "A quick look-in on your home while you travel." },
-    { label: "Plant watering", desc: "Your plants kept watered on schedule." },
-    { label: "Lawn & grass watering", desc: "Outdoor watering handled while you're away." },
+    { icon: "paw", label: "Pet sitting", desc: "Care and company for your pets while you're out." },
+    { icon: "bone", label: "Pet walking", desc: "Walks for your pets, scheduled around your needs." },
+    { icon: "key", label: "Home check-ins", desc: "A quick look-in on your home while you travel." },
+    { icon: "drop", label: "Plant watering", desc: "Your plants kept watered on schedule." },
+    { icon: "grass", label: "Lawn & grass watering", desc: "Outdoor watering handled while you're away." },
   ],
+  theme: { teal: "#0E8F86", gold: "#E6B23E" },
+  theme: { teal: "#0E8F86", gold: "#E6B23E" },
   announcement: { enabled: false, text: "" },
   chatExtraFacts: "",
 };
@@ -55,6 +57,9 @@ async function getContent() {
   }
 }
 
+const ALLOWED_ICONS = ["home","building","box","bed","stack","hardhat","broom","sparkle","drop","grass","key","paw","bone","check-circle","shield","clock","phone"];
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
 async function putContent(content) {
   const clean = {
     phone: String(content.phone || DEFAULT_CONTENT.phone).slice(0, 20),
@@ -66,18 +71,27 @@ async function putContent(content) {
       .slice(0, 4).map((s) => String(s).slice(0, 40)),
     areas: (Array.isArray(content.areas) ? content.areas : DEFAULT_CONTENT.areas)
       .slice(0, 12).map((s) => String(s).slice(0, 40)).filter(Boolean),
-    services: (Array.isArray(content.services) ? content.services : DEFAULT_CONTENT.services)
-      .slice(0, 6).map((s, i) => ({
-        title: String((s && s.title) || DEFAULT_CONTENT.services[i].title).slice(0, 60),
-        blurb: String((s && s.blurb) || "").slice(0, 260) || DEFAULT_CONTENT.services[i].blurb,
-        items: (Array.isArray(s && s.items) ? s.items : DEFAULT_CONTENT.services[i].items)
-          .slice(0, 6).map((x) => String(x).slice(0, 60)),
+    services: (Array.isArray(content.services) && content.services.length ? content.services : DEFAULT_CONTENT.services)
+      .slice(0, 8).map((s) => ({
+        icon: ALLOWED_ICONS.includes(s && s.icon) ? s.icon : "sparkle",
+        title: String((s && s.title) || "Service").slice(0, 60),
+        blurb: String((s && s.blurb) || "").slice(0, 260),
+        items: (Array.isArray(s && s.items) ? s.items : []).slice(0, 6).map((x) => String(x).slice(0, 60)).filter(Boolean),
       })),
     addons: (Array.isArray(content.addons) ? content.addons : DEFAULT_CONTENT.addons)
-      .slice(0, 5).map((a, i) => ({
-        label: String((a && a.label) || DEFAULT_CONTENT.addons[i].label).slice(0, 40),
-        desc: String((a && a.desc) || "").slice(0, 120) || DEFAULT_CONTENT.addons[i].desc,
+      .slice(0, 8).map((a) => ({
+        icon: ALLOWED_ICONS.includes(a && a.icon) ? a.icon : "paw",
+        label: String((a && a.label) || "Add-on").slice(0, 40),
+        desc: String((a && a.desc) || "").slice(0, 120),
       })),
+    theme: {
+      teal: HEX.test(content.theme && content.theme.teal) ? content.theme.teal : DEFAULT_CONTENT.theme.teal,
+      gold: HEX.test(content.theme && content.theme.gold) ? content.theme.gold : DEFAULT_CONTENT.theme.gold,
+    },
+    theme: {
+      teal: /^#[0-9a-fA-F]{6}$/.test((content.theme || {}).teal || "") ? content.theme.teal : DEFAULT_CONTENT.theme.teal,
+      gold: /^#[0-9a-fA-F]{6}$/.test((content.theme || {}).gold || "") ? content.theme.gold : DEFAULT_CONTENT.theme.gold,
+    },
     announcement: {
       enabled: !!(content.announcement && content.announcement.enabled),
       text: String((content.announcement && content.announcement.text) || "").slice(0, 160),
@@ -162,7 +176,7 @@ const json = (statusCode, obj) => ({
 });
 
 module.exports = {
-  init,
+  init, ALLOWED_ICONS,
   DEFAULT_CONTENT, getContent, putContent,
   getAuth, seedAuth, verifyPassword,
   signSession, verifySession, bearer,

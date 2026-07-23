@@ -92,6 +92,7 @@
   <div id="view-dash" class="hidden">
     <div class="seg" id="seg">
       <button data-tab="overview" class="active">Overview</button>
+      <button data-tab="ai">AI Editor</button>
       <button data-tab="content">Content</button>
       <button data-tab="services">Services</button>
       <button data-tab="addons">Add-ons</button>
@@ -109,6 +110,29 @@
       <div class="card">
         <h3>How this console works</h3>
         <p class="sub" style="margin-top:8px;">Everything you edit here publishes to the live website within seconds — no redeploy. The AI chat assistant reads the same content, so your services, add-ons, phone, and extra facts stay in sync everywhere. Client records, schedules, and invoicing live in your scheduling platform, not here.</p>
+      </div>
+    </div>
+
+    <!-- AI EDITOR -->
+    <div id="tab-ai" class="hidden">
+      <div class="card">
+        <h3>AI Editor</h3>
+        <p class="sub">Describe the change in plain English — rewrite copy, add or remove a service or add-on, adjust the accent colors, update areas. The AI proposes; nothing is published until you review the changes and press Apply.</p>
+        <div class="f"><textarea id="ai-instr" rows="3" maxlength="2000" placeholder="e.g. Add a window-washing service with 5 bullet points, and make the announcement bar say we're booking fall deep cleans."></textarea></div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:14px;">
+          <button class="btn btn-primary" id="btn-ai">Propose changes</button>
+          <span class="status" id="ai-status"></span>
+        </div>
+      </div>
+      <div class="card hidden" id="ai-review">
+        <h3>Review before publishing</h3>
+        <p class="sub" id="ai-summary"></p>
+        <div id="ai-diff" style="margin-top:12px;"></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btn-ai-apply">Apply &amp; publish</button>
+          <button class="mini" id="btn-ai-discard">Discard</button>
+          <span class="status" id="ai-apply-status"></span>
+        </div>
       </div>
     </div>
 
@@ -245,7 +269,7 @@
     b.addEventListener("click", function () {
       document.querySelectorAll("#seg button").forEach(function (x) { x.classList.remove("active"); });
       b.classList.add("active");
-      ["overview","content","services","addons","leads","settings"].forEach(function (tname) {
+      ["overview","ai","content","services","addons","leads","settings"].forEach(function (tname) {
         show($("tab-" + tname), tname === b.dataset.tab);
       });
       show($("savebar"), ["content","services","addons"].indexOf(b.dataset.tab) !== -1 || b.dataset.tab === "overview");
@@ -364,6 +388,67 @@
   }
   function loadLeads() { api("leads", { method: "GET" }).then(function (r) { if (r.ok) paintLeads(r.j.leads || []); }); }
   $("btn-refresh").addEventListener("click", loadLeads);
+
+  // ---------- AI editor ----------
+  var aiProposal = null;
+
+  function flat(o, prefix, out) {
+    out = out || {}; prefix = prefix || "";
+    Object.keys(o || {}).forEach(function (k) {
+      var v = o[k], pathk = prefix ? prefix + "." + k : k;
+      if (v && typeof v === "object") flat(v, pathk, out);
+      else out[pathk] = v;
+    });
+    return out;
+  }
+
+  function renderDiff(cur, next) {
+    var a = flat(cur), b = flat(next), keys = {}, rows = [];
+    Object.keys(a).forEach(function (k) { keys[k] = 1; });
+    Object.keys(b).forEach(function (k) { keys[k] = 1; });
+    Object.keys(keys).sort().forEach(function (k) {
+      var av = a[k], bv = b[k];
+      if (String(av) === String(bv)) return;
+      var row = document.createElement("div");
+      row.className = "lead";
+      row.innerHTML = "<div><b></b><div class='note old'></div><div class='note new'></div></div>";
+      row.querySelector("b").textContent = k;
+      var o = row.querySelector(".old"); o.textContent = av === undefined ? "(added)" : "\u2212 " + av; o.style.color = "#B4232A";
+      var n = row.querySelector(".new"); n.textContent = bv === undefined ? "(removed)" : "+ " + bv; n.style.color = "var(--teal-deep)";
+      rows.push(row);
+    });
+    var box = $("ai-diff"); box.innerHTML = "";
+    if (!rows.length) { box.innerHTML = '<p class="sub">No differences from the current content.</p>'; }
+    rows.forEach(function (r) { box.appendChild(r); });
+    return rows.length;
+  }
+
+  $("btn-ai").addEventListener("click", function () {
+    var st = $("ai-status"); st.className = "status"; st.textContent = "Thinking\u2026";
+    show($("ai-review"), false); aiProposal = null;
+    api("edit", { method: "POST", body: JSON.stringify({ instruction: $("ai-instr").value }) }).then(function (r) {
+      if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Editor failed."; return; }
+      st.textContent = "";
+      aiProposal = r.j.proposal;
+      $("ai-summary").textContent = r.j.summary;
+      renderDiff(r.j.current, r.j.proposal);
+      show($("ai-review"), true);
+    }).catch(function () { st.className = "status err"; st.textContent = "Network error."; });
+  });
+
+  $("btn-ai-apply").addEventListener("click", function () {
+    if (!aiProposal) return;
+    var st = $("ai-apply-status"); st.className = "status"; st.textContent = "Publishing\u2026";
+    api("content", { method: "PUT", body: JSON.stringify(aiProposal) }).then(function (r) {
+      if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Publish failed."; return; }
+      st.className = "status ok"; st.textContent = "Published \u2014 live now.";
+      content = r.j; loadContent();
+    });
+  });
+
+  $("btn-ai-discard").addEventListener("click", function () {
+    aiProposal = null; show($("ai-review"), false); $("ai-instr").value = "";
+  });
 
   // ---------- settings ----------
   $("btn-setpw").addEventListener("click", function () {
