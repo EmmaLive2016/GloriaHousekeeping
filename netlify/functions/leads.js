@@ -28,6 +28,21 @@ exports.handler = async (event) => {
     return U.json(200, { leads });
   }
 
+  if (event.httpMethod === "PUT" || event.httpMethod === "DELETE") {
+    if (!U.verifySession(U.bearer(event))) return U.json(401, { error: "Session expired — log in again." });
+    let b;
+    try { b = JSON.parse(event.body || "{}"); } catch { return U.json(400, { error: "Bad request" }); }
+    let leads = [];
+    try { leads = (await U.store().get("leads", { type: "json" })) || []; } catch { leads = []; }
+    if (event.httpMethod === "DELETE") {
+      leads = leads.filter((x) => x.ts !== b.ts);
+    } else {
+      leads = leads.map((x) => (x.ts === b.ts ? { ...x, done: !!b.done } : x));
+    }
+    await U.store().set("leads", JSON.stringify(leads));
+    return U.json(200, { leads });
+  }
+
   return U.json(405, { error: "Method not allowed" });
   } catch (err) {
     console.error("leads handler crash", err);

@@ -5,150 +5,200 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Console — Gloria's House Keeping Service</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700;1,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/styles.css">
 <style>
-  body { background: var(--paper); }
-  .con-wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 90px; }
-  .con-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 28px; margin-top: 20px; box-shadow: var(--shadow-sm); }
-  .con-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-  .con-title h1 { font-size: 1.7rem; }
-  .con-tabs { display: flex; gap: 10px; margin-top: 22px; }
-  .con-tab { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 9px 20px; font-weight: 600; cursor: pointer; }
-  .con-tab.active { background: var(--teal); border-color: var(--teal); color: #fff; }
-  .con-field { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
-  .con-field label { font-size: .88rem; font-weight: 600; color: var(--ink); }
-  .con-field .sub { font-size: .8rem; color: var(--slate); font-weight: 400; }
-  .con-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .con-actions { display: flex; align-items: center; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
-  .status { font-size: .9rem; color: var(--slate); }
-  .status.ok { color: var(--teal-deep); font-weight: 600; }
-  .status.err { color: #B4232A; font-weight: 600; }
-  .lead { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 12px; background: #fff; }
-  .lead b { color: var(--ink); }
-  .lead .when { font-size: .8rem; color: var(--slate); }
+  body { background: var(--paper); padding-bottom: 0 !important; }
+  .con-top { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,.75); backdrop-filter: saturate(1.6) blur(18px); -webkit-backdrop-filter: saturate(1.6) blur(18px); border-bottom: .5px solid var(--line); }
+  .con-top-in { max-width: 1020px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .con-brand { display: flex; align-items: baseline; gap: 10px; }
+  .con-brand .g { font-family: var(--script); font-style: italic; font-weight: 800; font-size: 1.3rem; color: var(--ink); }
+  .con-brand .c { font-size: .68rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--slate); }
+  .con-wrap { max-width: 1020px; margin: 0 auto; padding: 26px 20px 120px; }
+  .seg { display: flex; gap: 4px; background: rgba(16,24,22,.06); border-radius: 999px; padding: 4px; overflow-x: auto; }
+  .seg button { border: none; background: transparent; border-radius: 999px; padding: 9px 18px; font-weight: 600; font-size: .93rem; color: var(--slate); cursor: pointer; white-space: nowrap; }
+  .seg button.active { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
+  .seg button .badge { display: inline-block; min-width: 20px; padding: 1px 6px; margin-left: 6px; border-radius: 999px; background: var(--teal); color: #fff; font-size: .74rem; }
+  .card { background: #fff; border: .5px solid var(--line); border-radius: var(--r); padding: 26px; margin-top: 18px; box-shadow: var(--shadow-sm); }
+  .card h3 { margin-bottom: 4px; }
+  .card .sub { font-size: .88rem; color: var(--slate); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+  .tile { background: #fff; border: .5px solid var(--line); border-radius: var(--r); padding: 20px 22px; box-shadow: var(--shadow-sm); }
+  .tile .n { font-size: 2rem; font-weight: 800; letter-spacing: -.03em; color: var(--ink); line-height: 1.1; }
+  .tile .l { font-size: .85rem; font-weight: 600; color: var(--slate); margin-top: 4px; }
+  .f { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .f label { font-size: .88rem; font-weight: 600; color: var(--ink); }
+  .f .hint { font-size: .8rem; color: var(--slate); font-weight: 400; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .toggle { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-weight: 600; color: var(--ink); }
   .toggle input { width: 18px; height: 18px; accent-color: var(--teal); }
+  details.svc { border: .5px solid var(--line); border-radius: var(--r-sm); margin-top: 12px; background: var(--paper); overflow: hidden; }
+  details.svc summary { cursor: pointer; list-style: none; padding: 15px 18px; font-weight: 700; color: var(--ink); display: flex; justify-content: space-between; align-items: center; }
+  details.svc summary::after { content: "＋"; color: var(--slate); font-weight: 400; }
+  details.svc[open] summary::after { content: "−"; }
+  details.svc .inner { padding: 2px 18px 18px; background: #fff; }
+  .items3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .lead { border: .5px solid var(--line); border-radius: var(--r-sm); padding: 14px 16px; margin-top: 12px; background: #fff; display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  .lead.done { opacity: .55; }
+  .lead b { color: var(--ink); }
+  .lead a { color: var(--teal-deep); font-weight: 700; text-decoration: none; }
+  .lead .when { font-size: .78rem; color: var(--slate); margin-top: 4px; }
+  .lead .note { font-size: .9rem; margin-top: 4px; }
+  .lead-actions { display: flex; gap: 8px; flex: none; }
+  .mini { border: .5px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 14px; font-size: .82rem; font-weight: 600; cursor: pointer; color: var(--ink); }
+  .mini.warn { color: #B4232A; }
+  .mini:hover { border-color: var(--teal); }
+  .savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: rgba(255,255,255,.85); backdrop-filter: blur(16px); border-top: .5px solid var(--line); }
+  .savebar-in { max-width: 1020px; margin: 0 auto; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 16px; }
+  .status { font-size: .9rem; color: var(--slate); }
+  .status.ok { color: var(--teal-deep); font-weight: 700; }
+  .status.err { color: #B4232A; font-weight: 700; }
   .hidden { display: none !important; }
-  @media (max-width: 640px) { .con-row { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .row2, .items3, .tiles { grid-template-columns: 1fr; } .card { padding: 20px 16px; } }
 </style>
 </head>
 <body>
+<div class="con-top"><div class="con-top-in">
+  <div class="con-brand"><span class="g">Gloria's</span><span class="c">Console</span></div>
+  <button class="mini hidden" id="logout">Sign out</button>
+</div></div>
+
 <div class="con-wrap">
-  <div class="con-title">
-    <h1>Gloria's Console</h1>
-    <button class="btn btn-outline hidden" id="logout">Log out</button>
-  </div>
 
   <!-- LOGIN -->
-  <div class="con-card" id="view-login">
+  <div class="card" id="view-login" style="max-width:520px;margin:40px auto;">
     <h3>Sign in</h3>
-    <div class="con-field">
-      <label for="pw">Console password</label>
-      <input type="password" id="pw" autocomplete="current-password">
-    </div>
-    <div class="con-actions">
+    <p class="sub">Console access for Gloria's House Keeping Service.</p>
+    <div class="f"><label for="pw">Console password</label><input type="password" id="pw" autocomplete="current-password"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:20px;">
       <button class="btn btn-primary" id="btn-login">Sign in</button>
       <span class="status" id="login-status"></span>
     </div>
   </div>
 
-  <!-- FORCED PASSWORD CHANGE -->
-  <div class="con-card hidden" id="view-change">
+  <!-- FORCED CHANGE -->
+  <div class="card hidden" id="view-change" style="max-width:520px;margin:40px auto;">
     <h3>Set a new password</h3>
-    <p class="status">First sign-in (or a reset) requires choosing your own password — at least 10 characters. Store it in 1Password.</p>
-    <div class="con-field">
-      <label for="npw">New password</label>
-      <input type="password" id="npw" autocomplete="new-password">
-    </div>
-    <div class="con-field">
-      <label for="npw2">Repeat new password</label>
-      <input type="password" id="npw2" autocomplete="new-password">
-    </div>
-    <div class="con-actions">
+    <p class="sub">First sign-in (or a reset) requires your own password — at least 10 characters. Store it in 1Password.</p>
+    <div class="f"><label for="npw">New password</label><input type="password" id="npw" autocomplete="new-password"></div>
+    <div class="f"><label for="npw2">Repeat new password</label><input type="password" id="npw2" autocomplete="new-password"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:20px;">
       <button class="btn btn-primary" id="btn-change">Save password</button>
       <span class="status" id="change-status"></span>
     </div>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- DASH -->
   <div id="view-dash" class="hidden">
-    <div class="con-tabs">
-      <button class="con-tab active" data-tab="content">Site content</button>
-      <button class="con-tab" data-tab="leads">Callback leads</button>
+    <div class="seg" id="seg">
+      <button data-tab="overview" class="active">Overview</button>
+      <button data-tab="content">Content</button>
+      <button data-tab="services">Services</button>
+      <button data-tab="addons">Add-ons</button>
+      <button data-tab="leads">Leads<span class="badge hidden" id="lead-badge"></span></button>
+      <button data-tab="settings">Settings</button>
     </div>
 
-    <div class="con-card" id="tab-content">
-      <h3>Site content</h3>
-      <p class="status">Changes go live on the website within seconds of saving — no redeploy needed. The AI assistant uses these facts too.</p>
-
-      <div class="toggle">
-        <input type="checkbox" id="ann-on"> <label for="ann-on">Show announcement bar</label>
+    <!-- OVERVIEW -->
+    <div id="tab-overview">
+      <div class="tiles">
+        <div class="tile"><div class="n" id="t-leads">–</div><div class="l">Callback leads (open)</div></div>
+        <div class="tile"><div class="n" id="t-week">–</div><div class="l">New leads · last 7 days</div></div>
+        <div class="tile"><div class="n" id="t-pub">–</div><div class="l">Content last published</div></div>
       </div>
-      <div class="con-field">
-        <label for="ann-text">Announcement text <span class="sub">(e.g., holiday hours, booking notices)</span></label>
-        <input type="text" id="ann-text" maxlength="160">
-      </div>
-
-      <div class="con-row">
-        <div class="con-field">
-          <label for="c-phone">Business phone</label>
-          <input type="text" id="c-phone" maxlength="20">
-        </div>
-        <div class="con-field">
-          <label for="c-areas">Service areas <span class="sub">(one per line)</span></label>
-          <textarea id="c-areas" rows="5"></textarea>
-        </div>
-      </div>
-
-      <div class="con-field">
-        <label for="c-h1">Homepage headline</label>
-        <input type="text" id="c-h1" maxlength="120">
-      </div>
-      <div class="con-field">
-        <label for="c-lede">Homepage intro paragraph</label>
-        <textarea id="c-lede" rows="3" maxlength="400"></textarea>
-      </div>
-
-      <div class="con-row">
-        <div class="con-field">
-          <label>Trust badges <span class="sub">(3 short phrases under the headline)</span></label>
-          <input type="text" id="b0" maxlength="40">
-          <input type="text" id="b1" maxlength="40">
-          <input type="text" id="b2" maxlength="40">
-        </div>
-        <div class="con-field">
-          <label>Dark strip items <span class="sub">(4 short phrases)</span></label>
-          <input type="text" id="s0" maxlength="40">
-          <input type="text" id="s1" maxlength="40">
-          <input type="text" id="s2" maxlength="40">
-          <input type="text" id="s3" maxlength="40">
-        </div>
-      </div>
-
-      <div class="con-field">
-        <label for="c-facts">Extra facts for the AI assistant <span class="sub">(optional — plain sentences the assistant may state, e.g. hours or policies)</span></label>
-        <textarea id="c-facts" rows="3" maxlength="1200"></textarea>
-      </div>
-
-      <div class="con-actions">
-        <button class="btn btn-primary" id="btn-save">Save &amp; publish</button>
-        <span class="status" id="save-status"></span>
+      <div class="card">
+        <h3>How this console works</h3>
+        <p class="sub" style="margin-top:8px;">Everything you edit here publishes to the live website within seconds — no redeploy. The AI chat assistant reads the same content, so your services, add-ons, phone, and extra facts stay in sync everywhere. Client records, schedules, and invoicing live in your scheduling platform, not here.</p>
       </div>
     </div>
 
-    <div class="con-card hidden" id="tab-leads">
-      <h3>Callback leads</h3>
-      <p class="status">Requests from the website chat. Newest first. Call them back promptly — speed wins these.</p>
-      <div id="leads-list"></div>
+    <!-- CONTENT -->
+    <div id="tab-content" class="hidden">
+      <div class="card">
+        <h3>Announcement bar</h3>
+        <p class="sub">A gold banner across the top of every page — holiday hours, booking notices.</p>
+        <div class="toggle"><input type="checkbox" id="ann-on"><label for="ann-on">Show announcement bar</label></div>
+        <div class="f"><label for="ann-text">Announcement text</label><input type="text" id="ann-text" maxlength="160"></div>
+      </div>
+      <div class="card">
+        <h3>Business basics</h3>
+        <div class="row2">
+          <div class="f"><label for="c-phone">Business phone</label><input type="text" id="c-phone" maxlength="20"></div>
+          <div class="f"><label for="c-areas">Service areas <span class="hint">(one per line)</span></label><textarea id="c-areas" rows="5"></textarea></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Homepage hero</h3>
+        <div class="f"><label for="c-h1">Headline</label><input type="text" id="c-h1" maxlength="120"></div>
+        <div class="f"><label for="c-lede">Intro paragraph</label><textarea id="c-lede" rows="3" maxlength="400"></textarea></div>
+        <div class="row2" style="margin-top:6px;">
+          <div class="f"><label>Trust badges <span class="hint">(3)</span></label><input type="text" id="b0" maxlength="40"><input type="text" id="b1" maxlength="40"><input type="text" id="b2" maxlength="40"></div>
+          <div class="f"><label>Dark strip items <span class="hint">(4)</span></label><input type="text" id="s0" maxlength="40"><input type="text" id="s1" maxlength="40"><input type="text" id="s2" maxlength="40"><input type="text" id="s3" maxlength="40"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>AI assistant — extra facts</h3>
+        <p class="sub">Optional plain sentences the assistant may state (hours, policies, specials). It can never quote prices.</p>
+        <div class="f"><textarea id="c-facts" rows="3" maxlength="1200" aria-label="Extra facts"></textarea></div>
+      </div>
     </div>
+
+    <!-- SERVICES -->
+    <div id="tab-services" class="hidden">
+      <div class="card">
+        <h3>Service lines</h3>
+        <p class="sub">Edits update the homepage cards, the services page, the booking form's dropdown, and the AI — together.</p>
+        <div id="svc-list"></div>
+      </div>
+    </div>
+
+    <!-- ADDONS -->
+    <div id="tab-addons" class="hidden">
+      <div class="card">
+        <h3>Add-on services</h3>
+        <p class="sub">Shown on the services page, the booking checklist, and known to the AI.</p>
+        <div id="addon-list"></div>
+      </div>
+    </div>
+
+    <!-- LEADS -->
+    <div id="tab-leads" class="hidden">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div><h3>Callback leads</h3><p class="sub">From the website chat. Newest first — speed wins these.</p></div>
+          <button class="mini" id="btn-refresh">Refresh</button>
+        </div>
+        <div id="leads-list"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="hidden">
+      <div class="card" style="max-width:560px;">
+        <h3>Change console password</h3>
+        <div class="f"><label for="sp1">New password</label><input type="password" id="sp1" autocomplete="new-password"></div>
+        <div class="f"><label for="sp2">Repeat new password</label><input type="password" id="sp2" autocomplete="new-password"></div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:20px;">
+          <button class="btn btn-primary" id="btn-setpw">Update password</button>
+          <span class="status" id="setpw-status"></span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<!-- STICKY SAVE BAR -->
+<div class="savebar hidden" id="savebar"><div class="savebar-in">
+  <button class="btn btn-primary" id="btn-save">Save &amp; publish</button>
+  <span class="status" id="save-status">Changes publish to the live site instantly.</span>
+</div></div>
 
 <script>
 (function () {
   "use strict";
   var token = "";
+  var content = null;
   var $ = function (id) { return document.getElementById(id); };
   var show = function (el, on) { el.classList.toggle("hidden", !on); };
 
@@ -157,113 +207,175 @@
     opts.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
     if (token) opts.headers.Authorization = "Bearer " + token;
     return fetch("/.netlify/functions/" + path, opts).then(function (r) {
-      return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }).catch(function () { return { ok: false, j: {} }; });
     });
   }
 
-  // ---------- login ----------
+  // ---------- auth ----------
   $("btn-login").addEventListener("click", function () {
     var st = $("login-status"); st.className = "status"; st.textContent = "Signing in\u2026";
-    api("auth", { method: "POST", body: JSON.stringify({ action: "login", password: $("pw").value }) })
-      .then(function (r) {
-        if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Sign-in failed."; return; }
-        token = r.j.token;
-        show($("view-login"), false);
-        show($("logout"), true);
-        if (r.j.mustChange) { show($("view-change"), true); }
-        else { enterDash(); }
-      })
-      .catch(function () { st.className = "status err"; st.textContent = "Network error."; });
+    api("auth", { method: "POST", body: JSON.stringify({ action: "login", password: $("pw").value }) }).then(function (r) {
+      if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Sign-in failed."; return; }
+      token = r.j.token;
+      show($("view-login"), false); show($("logout"), true);
+      if (r.j.mustChange) show($("view-change"), true); else enterDash();
+    }).catch(function () { st.className = "status err"; st.textContent = "Network error."; });
   });
   $("pw").addEventListener("keydown", function (e) { if (e.key === "Enter") $("btn-login").click(); });
 
-  // ---------- forced change ----------
   $("btn-change").addEventListener("click", function () {
     var st = $("change-status"); st.className = "status";
     if ($("npw").value !== $("npw2").value) { st.className = "status err"; st.textContent = "Passwords don't match."; return; }
     st.textContent = "Saving\u2026";
-    api("auth", { method: "POST", body: JSON.stringify({ action: "change", newPassword: $("npw").value }) })
-      .then(function (r) {
-        if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Failed."; return; }
-        show($("view-change"), false);
-        enterDash();
-      });
+    api("auth", { method: "POST", body: JSON.stringify({ action: "change", newPassword: $("npw").value }) }).then(function (r) {
+      if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Failed."; return; }
+      show($("view-change"), false); enterDash();
+    });
   });
 
-  // ---------- dashboard ----------
+  $("logout").addEventListener("click", function () { location.reload(); });
+
+  // ---------- dash ----------
   function enterDash() {
-    show($("view-dash"), true);
-    loadContent();
-    loadLeads();
+    show($("view-dash"), true); show($("savebar"), true);
+    loadContent(); loadLeads();
   }
 
-  document.querySelectorAll(".con-tab").forEach(function (b) {
+  document.querySelectorAll("#seg button").forEach(function (b) {
     b.addEventListener("click", function () {
-      document.querySelectorAll(".con-tab").forEach(function (x) { x.classList.remove("active"); });
+      document.querySelectorAll("#seg button").forEach(function (x) { x.classList.remove("active"); });
       b.classList.add("active");
-      show($("tab-content"), b.dataset.tab === "content");
-      show($("tab-leads"), b.dataset.tab === "leads");
+      ["overview","content","services","addons","leads","settings"].forEach(function (tname) {
+        show($("tab-" + tname), tname === b.dataset.tab);
+      });
+      show($("savebar"), ["content","services","addons"].indexOf(b.dataset.tab) !== -1 || b.dataset.tab === "overview");
       if (b.dataset.tab === "leads") loadLeads();
     });
   });
 
+  // ---------- content ----------
   function loadContent() {
     api("content", { method: "GET" }).then(function (r) {
       if (!r.ok) return;
-      var c = r.j;
-      $("ann-on").checked = !!(c.announcement && c.announcement.enabled);
-      $("ann-text").value = (c.announcement && c.announcement.text) || "";
-      $("c-phone").value = c.phone || "";
-      $("c-areas").value = (c.areas || []).join("\n");
-      $("c-h1").value = c.heroH1 || "";
-      $("c-lede").value = c.heroLede || "";
-      ["b0","b1","b2"].forEach(function (id, i) { $(id).value = (c.badges || [])[i] || ""; });
-      ["s0","s1","s2","s3"].forEach(function (id, i) { $(id).value = (c.strip || [])[i] || ""; });
-      $("c-facts").value = c.chatExtraFacts || "";
+      content = r.j;
+      $("ann-on").checked = !!(content.announcement && content.announcement.enabled);
+      $("ann-text").value = (content.announcement && content.announcement.text) || "";
+      $("c-phone").value = content.phone || "";
+      $("c-areas").value = (content.areas || []).join("\n");
+      $("c-h1").value = content.heroH1 || "";
+      $("c-lede").value = content.heroLede || "";
+      ["b0","b1","b2"].forEach(function (id, i) { $(id).value = (content.badges || [])[i] || ""; });
+      ["s0","s1","s2","s3"].forEach(function (id, i) { $(id).value = (content.strip || [])[i] || ""; });
+      $("c-facts").value = content.chatExtraFacts || "";
+      renderServices(); renderAddons();
+      $("t-pub").textContent = content.updatedAt ? new Date(content.updatedAt).toLocaleDateString() : "defaults";
+    });
+  }
+
+  function renderServices() {
+    var box = $("svc-list"); box.innerHTML = "";
+    (content.services || []).forEach(function (s, i) {
+      var d = document.createElement("details"); d.className = "svc"; if (i === 0) d.open = true;
+      d.innerHTML = '<summary></summary><div class="inner">' +
+        '<div class="f"><label>Title</label><input type="text" maxlength="60" class="sv-t"></div>' +
+        '<div class="f"><label>Short description</label><textarea rows="2" maxlength="260" class="sv-b"></textarea></div>' +
+        '<div class="f"><label>Bullets <span class="hint">(6 — first 3 show on the homepage card)</span></label><div class="items3">' +
+        '<input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i">' +
+        '<input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i">' +
+        '</div></div></div>';
+      d.querySelector("summary").textContent = s.title;
+      d.querySelector(".sv-t").value = s.title;
+      d.querySelector(".sv-b").value = s.blurb;
+      d.querySelectorAll(".sv-i").forEach(function (inp, j) { inp.value = s.items[j] || ""; });
+      d.querySelector(".sv-t").addEventListener("input", function (e) { d.querySelector("summary").textContent = e.target.value; });
+      box.appendChild(d);
+    });
+  }
+
+  function renderAddons() {
+    var box = $("addon-list"); box.innerHTML = "";
+    (content.addons || []).forEach(function (a) {
+      var w = document.createElement("div"); w.className = "row2"; w.style.marginTop = "12px";
+      w.innerHTML = '<div class="f"><label>Add-on</label><input type="text" maxlength="40" class="ad-l"></div>' +
+                    '<div class="f"><label>Description</label><input type="text" maxlength="120" class="ad-d"></div>';
+      w.querySelector(".ad-l").value = a.label;
+      w.querySelector(".ad-d").value = a.desc;
+      box.appendChild(w);
     });
   }
 
   $("btn-save").addEventListener("click", function () {
     var st = $("save-status"); st.className = "status"; st.textContent = "Publishing\u2026";
+    var services = Array.prototype.map.call(document.querySelectorAll("#svc-list details"), function (d) {
+      return {
+        title: d.querySelector(".sv-t").value,
+        blurb: d.querySelector(".sv-b").value,
+        items: Array.prototype.map.call(d.querySelectorAll(".sv-i"), function (i) { return i.value; }).filter(Boolean),
+      };
+    });
+    var addons = Array.prototype.map.call(document.querySelectorAll("#addon-list .row2"), function (w) {
+      return { label: w.querySelector(".ad-l").value, desc: w.querySelector(".ad-d").value };
+    });
     var body = {
       announcement: { enabled: $("ann-on").checked, text: $("ann-text").value },
       phone: $("c-phone").value,
       areas: $("c-areas").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean),
-      heroH1: $("c-h1").value,
-      heroLede: $("c-lede").value,
+      heroH1: $("c-h1").value, heroLede: $("c-lede").value,
       badges: [$("b0").value, $("b1").value, $("b2").value],
       strip: [$("s0").value, $("s1").value, $("s2").value, $("s3").value],
       chatExtraFacts: $("c-facts").value,
+      services: services, addons: addons,
     };
-    api("content", { method: "PUT", body: JSON.stringify(body) })
-      .then(function (r) {
-        if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Save failed."; return; }
-        st.className = "status ok"; st.textContent = "Published \u2014 live now.";
-      })
-      .catch(function () { st.className = "status err"; st.textContent = "Network error."; });
+    api("content", { method: "PUT", body: JSON.stringify(body) }).then(function (r) {
+      if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Save failed."; return; }
+      content = r.j;
+      st.className = "status ok"; st.textContent = "Published \u2014 live now.";
+      $("t-pub").textContent = new Date().toLocaleDateString();
+    }).catch(function () { st.className = "status err"; st.textContent = "Network error."; });
   });
 
-  function loadLeads() {
-    api("leads", { method: "GET" }).then(function (r) {
-      if (!r.ok) return;
-      var box = $("leads-list");
-      var leads = r.j.leads || [];
-      box.innerHTML = leads.length ? "" : '<p class="status">No callback requests yet.</p>';
-      leads.forEach(function (l) {
-        var d = document.createElement("div");
-        d.className = "lead";
-        var when = new Date(l.ts).toLocaleString();
-        d.innerHTML = "<b></b> \u2014 <a></a><div class='note'></div><div class='when'></div>";
-        d.querySelector("b").textContent = l.name;
-        var a = d.querySelector("a"); a.textContent = l.phone; a.href = "tel:" + l.phone.replace(/[^\d+]/g, "");
-        d.querySelector(".note").textContent = l.note || "";
-        d.querySelector(".when").textContent = when;
-        box.appendChild(d);
+  // ---------- leads ----------
+  function paintLeads(leads) {
+    var box = $("leads-list");
+    var open = leads.filter(function (l) { return !l.done; }).length;
+    $("t-leads").textContent = open;
+    var wk = Date.now() - 7 * 864e5;
+    $("t-week").textContent = leads.filter(function (l) { return new Date(l.ts).getTime() > wk; }).length;
+    var badge = $("lead-badge");
+    if (open > 0) { badge.textContent = open; show(badge, true); } else show(badge, false);
+    box.innerHTML = leads.length ? "" : '<p class="sub" style="margin-top:12px;">No callback requests yet.</p>';
+    leads.forEach(function (l) {
+      var d = document.createElement("div"); d.className = "lead" + (l.done ? " done" : "");
+      d.innerHTML = '<div><b></b> \u2014 <a></a><div class="note"></div><div class="when"></div></div>' +
+                    '<div class="lead-actions"><button class="mini done-btn"></button><button class="mini warn del-btn">Delete</button></div>';
+      d.querySelector("b").textContent = l.name;
+      var a = d.querySelector("a"); a.textContent = l.phone; a.href = "tel:" + l.phone.replace(/[^\d+]/g, "");
+      d.querySelector(".note").textContent = l.note || "";
+      d.querySelector(".when").textContent = new Date(l.ts).toLocaleString();
+      var db = d.querySelector(".done-btn"); db.textContent = l.done ? "Reopen" : "Mark called";
+      db.addEventListener("click", function () {
+        api("leads", { method: "PUT", body: JSON.stringify({ ts: l.ts, done: !l.done }) }).then(function (r) { if (r.ok) paintLeads(r.j.leads); });
       });
+      d.querySelector(".del-btn").addEventListener("click", function () {
+        api("leads", { method: "DELETE", body: JSON.stringify({ ts: l.ts }) }).then(function (r) { if (r.ok) paintLeads(r.j.leads); });
+      });
+      box.appendChild(d);
     });
   }
+  function loadLeads() { api("leads", { method: "GET" }).then(function (r) { if (r.ok) paintLeads(r.j.leads || []); }); }
+  $("btn-refresh").addEventListener("click", loadLeads);
 
-  $("logout").addEventListener("click", function () { location.reload(); });
+  // ---------- settings ----------
+  $("btn-setpw").addEventListener("click", function () {
+    var st = $("setpw-status"); st.className = "status";
+    if ($("sp1").value !== $("sp2").value) { st.className = "status err"; st.textContent = "Passwords don't match."; return; }
+    st.textContent = "Updating\u2026";
+    api("auth", { method: "POST", body: JSON.stringify({ action: "change", newPassword: $("sp1").value }) }).then(function (r) {
+      if (!r.ok) { st.className = "status err"; st.textContent = r.j.error || "Failed."; return; }
+      st.className = "status ok"; st.textContent = "Password updated.";
+      $("sp1").value = ""; $("sp2").value = "";
+    });
+  });
 })();
 </script>
 </body>
