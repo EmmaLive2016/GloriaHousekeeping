@@ -17,7 +17,7 @@ const DEFAULT_CONTENT = {
   phone: "720-227-6417",
   heroH1: "A spotless home is a phone call away.",
   heroLede:
-    "Serving the Denver Metro since 2002, Gloria's House Keeping Service delivers reliable, insured & bonded cleaning for homes and businesses — with satisfaction guaranteed. Book online or call for a free estimate.",
+    "From family homes and offices to Airbnb turnovers and post-construction cleans — insured & bonded, satisfaction guaranteed, serving the Denver Metro since 2002. Book online or call for a free estimate.",
   badges: ["Insured & Bonded", "Satisfaction guaranteed", "20+ years in business"],
   strip: ["Insured & Bonded", "Serving Colorado since 2002", "Satisfaction guaranteed", "Talk to Gloria directly"],
   areas: ["Highlands Ranch", "Denver Metro Area", "Elizabeth", "Fort Collins", "Loveland"],
