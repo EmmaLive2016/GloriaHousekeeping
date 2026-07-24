@@ -173,6 +173,7 @@
         <h3>Service lines</h3>
         <p class="sub">Edits update the homepage cards, the services page, the booking form's dropdown, and the AI — together.</p>
         <div id="svc-list"></div>
+        <div style="margin-top:14px;"><button class="mini" id="btn-add-svc">＋ Add service</button> <span class="status" id="svc-note"></span></div>
       </div>
     </div>
 
@@ -182,6 +183,7 @@
         <h3>Add-on services</h3>
         <p class="sub">Shown on the services page, the booking checklist, and known to the AI.</p>
         <div id="addon-list"></div>
+        <div style="margin-top:14px;"><button class="mini" id="btn-add-addon">＋ Add add-on</button> <span class="status" id="addon-note"></span></div>
       </div>
     </div>
 
@@ -222,6 +224,10 @@
 (function () {
   "use strict";
   var token = "";
+  var ICON_OPTIONS = ["home","building","box","bed","stack","hardhat","broom","sparkle","drop","grass","key","paw","bone","check-circle","shield","clock","phone"];
+  function iconSelect(cls, val) {
+    return '<select class="' + cls + '">' + ICON_OPTIONS.map(function (o) { return '<option' + (o === val ? " selected" : "") + ">" + o + "</option>"; }).join("") + "</select>";
+  }
   var content = null;
   var $ = function (id) { return document.getElementById(id); };
   var show = function (el, on) { el.classList.toggle("hidden", !on); };
@@ -296,50 +302,89 @@
     });
   }
 
+  function svcRow(s, openIt) {
+    var d = document.createElement("details"); d.className = "svc"; if (openIt) d.open = true;
+    d.innerHTML = '<summary></summary><div class="inner">' +
+      '<div class="row2"><div class="f"><label>Title</label><input type="text" maxlength="60" class="sv-t"></div>' +
+      '<div class="f"><label>Icon</label>' + iconSelect("sv-icon", s.icon || "sparkle") + '</div></div>' +
+      '<div class="f"><label>Short description</label><textarea rows="2" maxlength="260" class="sv-b"></textarea></div>' +
+      '<div class="f"><label>Bullets <span class="hint">(up to 6 — first 3 show on the homepage card)</span></label><div class="items3">' +
+      '<input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i">' +
+      '<input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i">' +
+      '</div></div>' +
+      '<div style="margin-top:14px;"><button type="button" class="mini warn sv-del">Delete this service</button></div>' +
+      '</div>';
+    d.querySelector("summary").textContent = s.title || "New service";
+    d.querySelector(".sv-t").value = s.title || "";
+    d.querySelector(".sv-b").value = s.blurb || "";
+    d.querySelectorAll(".sv-i").forEach(function (inp, j) { inp.value = (s.items || [])[j] || ""; });
+    d.querySelector(".sv-t").addEventListener("input", function (e) { d.querySelector("summary").textContent = e.target.value || "New service"; });
+    d.querySelector(".sv-del").addEventListener("click", function () {
+      var note = $("svc-note"); note.className = "status";
+      if (document.querySelectorAll("#svc-list details").length <= 1) { note.className = "status err"; note.textContent = "At least one service is required."; return; }
+      note.textContent = "Removed — press Save & publish to make it live.";
+      d.remove();
+    });
+    return d;
+  }
+
   function renderServices() {
     var box = $("svc-list"); box.innerHTML = "";
-    (content.services || []).forEach(function (s, i) {
-      var d = document.createElement("details"); d.className = "svc"; if (i === 0) d.open = true;
-      d.innerHTML = '<summary></summary><div class="inner">' +
-        '<div class="f"><label>Title</label><input type="text" maxlength="60" class="sv-t"></div>' +
-        '<div class="f"><label>Short description</label><textarea rows="2" maxlength="260" class="sv-b"></textarea></div>' +
-        '<div class="f"><label>Bullets <span class="hint">(6 — first 3 show on the homepage card)</span></label><div class="items3">' +
-        '<input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i">' +
-        '<input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i"><input type="text" maxlength="60" class="sv-i">' +
-        '</div></div></div>';
-      d.querySelector("summary").textContent = s.title;
-      d.querySelector(".sv-t").value = s.title;
-      d.querySelector(".sv-b").value = s.blurb;
-      d.querySelectorAll(".sv-i").forEach(function (inp, j) { inp.value = s.items[j] || ""; });
-      d.querySelector(".sv-t").addEventListener("input", function (e) { d.querySelector("summary").textContent = e.target.value; });
-      box.appendChild(d);
+    (content.services || []).forEach(function (s, i) { box.appendChild(svcRow(s, i === 0)); });
+  }
+
+  function addonRow(a) {
+    var w = document.createElement("div"); w.className = "addon-row"; w.style.cssText = "display:grid;grid-template-columns:130px 1fr 1.4fr auto;gap:10px;align-items:end;margin-top:12px;";
+    w.innerHTML = '<div class="f" style="margin-top:0;"><label>Icon</label>' + iconSelect("ad-i", a.icon || "paw") + '</div>' +
+                  '<div class="f" style="margin-top:0;"><label>Add-on</label><input type="text" maxlength="40" class="ad-l"></div>' +
+                  '<div class="f" style="margin-top:0;"><label>Description</label><input type="text" maxlength="120" class="ad-d"></div>' +
+                  '<button type="button" class="mini warn ad-del" style="margin-bottom:4px;">Delete</button>';
+    w.querySelector(".ad-l").value = a.label || "";
+    w.querySelector(".ad-d").value = a.desc || "";
+    w.querySelector(".ad-del").addEventListener("click", function () {
+      $("addon-note").className = "status";
+      $("addon-note").textContent = "Removed — press Save & publish to make it live.";
+      w.remove();
     });
+    return w;
   }
 
   function renderAddons() {
     var box = $("addon-list"); box.innerHTML = "";
-    (content.addons || []).forEach(function (a) {
-      var w = document.createElement("div"); w.className = "row2"; w.style.marginTop = "12px";
-      w.innerHTML = '<div class="f"><label>Add-on</label><input type="text" maxlength="40" class="ad-l"></div>' +
-                    '<div class="f"><label>Description</label><input type="text" maxlength="120" class="ad-d"></div>';
-      w.querySelector(".ad-l").value = a.label;
-      w.querySelector(".ad-d").value = a.desc;
-      box.appendChild(w);
-    });
+    (content.addons || []).forEach(function (a) { box.appendChild(addonRow(a)); });
   }
+
+  $("btn-add-svc").addEventListener("click", function () {
+    var note = $("svc-note"); note.className = "status";
+    if (document.querySelectorAll("#svc-list details").length >= 8) { note.className = "status err"; note.textContent = "Maximum of 8 services."; return; }
+    note.textContent = "New service added below — fill it in, then Save & publish.";
+    var row = svcRow({ icon: "sparkle", title: "", blurb: "", items: [] }, true);
+    $("svc-list").appendChild(row);
+    row.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  $("btn-add-addon").addEventListener("click", function () {
+    var note = $("addon-note"); note.className = "status";
+    if (document.querySelectorAll("#addon-list .addon-row").length >= 8) { note.className = "status err"; note.textContent = "Maximum of 8 add-ons."; return; }
+    note.textContent = "New add-on added below — fill it in, then Save & publish.";
+    var row = addonRow({ icon: "paw", label: "", desc: "" });
+    $("addon-list").appendChild(row);
+    row.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 
   $("btn-save").addEventListener("click", function () {
     var st = $("save-status"); st.className = "status"; st.textContent = "Publishing\u2026";
     var services = Array.prototype.map.call(document.querySelectorAll("#svc-list details"), function (d) {
       return {
+        icon: d.querySelector(".sv-icon").value,
         title: d.querySelector(".sv-t").value,
         blurb: d.querySelector(".sv-b").value,
         items: Array.prototype.map.call(d.querySelectorAll(".sv-i"), function (i) { return i.value; }).filter(Boolean),
       };
-    });
-    var addons = Array.prototype.map.call(document.querySelectorAll("#addon-list .row2"), function (w) {
-      return { label: w.querySelector(".ad-l").value, desc: w.querySelector(".ad-d").value };
-    });
+    }).filter(function (s) { return s.title.trim(); });
+    var addons = Array.prototype.map.call(document.querySelectorAll("#addon-list .addon-row"), function (w) {
+      return { icon: w.querySelector(".ad-i").value, label: w.querySelector(".ad-l").value, desc: w.querySelector(".ad-d").value };
+    }).filter(function (a) { return a.label.trim(); });
     var body = {
       announcement: { enabled: $("ann-on").checked, text: $("ann-text").value },
       phone: $("c-phone").value,
